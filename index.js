@@ -98,6 +98,28 @@ app.delete('/api/sessions/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/sessions/:id/games/:index', async (req, res) => {
+  try {
+    const session = await Session.findOne({ id: req.params.id });
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const gameIndex = parseInt(req.params.index);
+    if (gameIndex < 0 || gameIndex >= session.games.length) {
+      return res.status(400).json({ error: 'Invalid game index' });
+    }
+
+    session.games.splice(gameIndex, 1);
+    await session.save();
+    
+    res.json(session);
+  } catch (error) {
+    console.error('Error deleting game:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
